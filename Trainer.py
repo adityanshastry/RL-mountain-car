@@ -10,19 +10,17 @@ import Utils
 from joblib import Parallel, delayed
 
 
-def plot_rewards_and_episodes(sarsa_rewards, q_learning_rewards):
-    sarsa, = plt.plot(range(len(sarsa_rewards)), sarsa_rewards, 'b-')
-    q_learning, = plt.plot(range(len(q_learning_rewards)), q_learning_rewards, 'r-')
-    plt.legend([sarsa, q_learning], ['Sarsa', 'Q-Learning'])
-    plt.axis([0, len(q_learning_rewards), -1000, 0])
-    plt.title("Undiscounted Returns vs Episodes")
+def plot_rewards_and_episodes(rewards, stddev, control_type, line_type, color):
+    plt.errorbar(range(len(rewards)), rewards, stddev, marker=line_type, color=color, ecolor="g")
+    plt.axis([0, len(rewards), -1000, 0])
+    plt.title("Undiscounted Returns vs Episodes for " + control_type)
     plt.xlabel("Episodes")
     plt.ylabel("Undiscounted Returns")
     plt.show()
 
 
 def train_sarsa(num_trials, num_episodes, lr, epsilon, gamma, fourier_basis_order, total_trials):
-    undiscounted_returns = np.zeros(shape=num_episodes)
+    undiscounted_returns = np.zeros(shape=(total_trials, num_episodes))
 
     environment = Environment.Environment()
     agent = Agent.Agent(fourier_basis_order=fourier_basis_order, epsilon=epsilon)
@@ -44,13 +42,13 @@ def train_sarsa(num_trials, num_episodes, lr, epsilon, gamma, fourier_basis_orde
                 current_state = next_state
                 current_action = next_action
 
-            undiscounted_returns[episode] += -1 * environment.time_step / total_trials
+            undiscounted_returns[trial][episode] += -1 * environment.time_step
 
     return undiscounted_returns
 
 
 def train_q_learning(num_trials, num_episodes, lr, epsilon, gamma, fourier_basis_order, total_trials):
-    undiscounted_returns = np.zeros(shape=num_episodes)
+    undiscounted_returns = np.zeros(shape=(total_trials, num_episodes))
 
     environment = Environment.Environment()
     # environment = gym.make("MountainCar-v0")
@@ -72,7 +70,7 @@ def train_q_learning(num_trials, num_episodes, lr, epsilon, gamma, fourier_basis
                 agent.q_learning_update(current_state, current_action, reward, next_state, lr, gamma)
                 current_state = next_state
                 current_action = agent.get_action(next_state)
-            undiscounted_returns[episode] += -1 * environment.time_step / total_trials
+            undiscounted_returns[trial][episode] = -1 * environment.time_step
 
     return undiscounted_returns
 
