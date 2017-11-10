@@ -11,6 +11,13 @@ from joblib import Parallel, delayed
 
 
 def plot_rewards_and_episodes(rewards, stddev, control_type, line_type, color):
+    y_axis_ticks = np.arange(-1000, 1, 100)
+    x_axis_ticks = np.arange(0, 201, 50)
+    fig, ax = plt.subplots()
+    ax.set_yticks(y_axis_ticks)
+    ax.set_xticks(x_axis_ticks)
+    ax.yaxis.grid(True)
+    ax.xaxis.grid(True)
     plt.errorbar(range(len(rewards)), rewards, stddev, marker=line_type, color=color, ecolor="g")
     plt.axis([0, len(rewards), -1000, 0])
     plt.title("Undiscounted Returns vs Episodes for " + control_type)
